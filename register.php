@@ -1,63 +1,77 @@
 <?php
+session_start();
+
+$errors = [];
+
 if (isset($_POST['submit'])) {
+    // Database connection details
     $host = "localhost";
     $database = "echoes_of_noordheim";
     $user = "root";
     $password = "";
 
-    $errors = [];
-
-    // Connect to the database
+    // Connect to MySQL database
     $db = mysqli_connect($host, $user, $password, $database) or die("Error: " . mysqli_connect_error());
 
-    // Get form data
+    // Sanitize and validate input data
     $username = mysqli_real_escape_string($db, $_POST['username']);
     $email = mysqli_real_escape_string($db, $_POST['email']);
     $password = $_POST['password'];
 
-    // Validation
-    if ($username == '') {
-        $errors['username'] = 'Please fill in your username.';
-    }
-    if ($email == '') {
-        $errors['email'] = 'Please fill in your email.';
-    }
-    if ($password == '') {
-        $errors['password'] = 'Please fill in your password.';
+    // Validate username
+    if (empty($username)) {
+        $errors['username'] = 'Please enter a username';
     }
 
+    // Validate email
+    if (empty($email)) {
+        $errors['email'] = 'Please enter an email address';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Please enter a valid email address';
+    }
+
+    // Validate password
+    if (empty($password)) {
+        $errors['password'] = 'Please enter a password';
+    }
+
+    // If no errors, proceed with registration
     if (empty($errors)) {
-        // Create a secure password, with the PHP function password_hash()
-        $password = password_hash($password, PASSWORD_DEFAULT);
-        // Store the new user in the database.
-        $query = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$password')";
+        // Hash the password
+        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+        // Placeholder image for profile pic
+        $profilePic = 'img/placeholder.jpeg'; // Ensure this file exists in the specified path
+
+        // Insert user into database
+        $query = "INSERT INTO users (username, email, password, profile_pic) VALUES ('$username', '$email', '$passwordHash', '$profilePic')";
         $result = mysqli_query($db, $query);
 
-        // If query succeeded
         if ($result) {
-            // Redirect to login page
-            header('Location: login.php');
-            // Exit the code
+            // Redirect to login page after successful registration
+            header("Location: login.php");
             exit;
         } else {
             $errors['database'] = 'Database insertion failed. Please try again.';
         }
     }
+
+    // Close the database connection
+    mysqli_close($db);
 }
 ?>
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echoes of Noordheim Forum - Register</title>
     <link rel="stylesheet" href="css/style.css">
-    <title>Echoes of Noordheim Forum</title>
 </head>
 <body>
 <header>
     <h1 class="title">Account</h1>
-
 </header>
 <section class="sidebar">
     <section class="title">Echoes of Noordheim Forum</section>
@@ -69,27 +83,30 @@ if (isset($_POST['submit'])) {
     </menu>
 </section>
 <main class="main-content">
-    <form action="" method="post" class="test">
-        <div class="form-element">
+    <section class="title">
+        <h1>Register</h1>
+    </section>
+    <form action="" method="post" class="register-form">
+        <section class="form-element">
             <label for="username">Username</label>
-            <input id="username" type="text" name="username" placeholder="Type your username here" value="<?php echo isset($username) ? htmlspecialchars($username) : ''; ?>" />
-            <p><?php echo isset($errors['username']) ? htmlspecialchars($errors['username']) : ''; ?></p>
-        </div>
-        <div class="form-element">
-            <label for="email">E-mail</label>
-            <input id="email" type="email" name="email" placeholder="Type your email address here" value="<?php echo isset($email) ? htmlspecialchars($email) : ''; ?>" />
-            <p><?php echo isset($errors['email']) ? htmlspecialchars($errors['email']) : ''; ?></p>
-        </div>
-        <div class="form-element">
+            <input id="username" type="text" name="username" placeholder="Enter your username" value="<?= isset($username) ? htmlspecialchars($username) : '' ?>" required>
+            <p><?= isset($errors['username']) ? htmlspecialchars($errors['username']) : '' ?></p>
+        </section>
+        <section class="form-element">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" placeholder="Enter your email" value="<?= isset($email) ? htmlspecialchars($email) : '' ?>" required>
+            <p><?= isset($errors['email']) ? htmlspecialchars($errors['email']) : '' ?></p>
+        </section>
+        <section class="form-element">
             <label for="password">Password</label>
-            <input id="password" type="password" name="password" placeholder="Type your password here">
-            <p><?php echo isset($errors['password']) ? htmlspecialchars($errors['password']) : ''; ?></p>
-        </div>
-        <p>Already have an account? <a href="login.php">Login Here</a>!</p>
-        <div class="form-element">
+            <input id="password" type="password" name="password" placeholder="Enter your password" required>
+            <p><?= isset($errors['password']) ? htmlspecialchars($errors['password']) : '' ?></p>
+        </section>
+        <section class="form-element">
             <button type="submit" name="submit">Register</button>
-        </div>
-        <p><?php echo isset($errors['database']) ? htmlspecialchars($errors['database']) : ''; ?></p>
+        </section>
+        <p>Already have an account? <a href="login.php">Login here</a></p>
+        <p><?= isset($errors['database']) ? htmlspecialchars($errors['database']) : '' ?></p>
     </form>
 </main>
 </body>

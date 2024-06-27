@@ -72,7 +72,7 @@ if (isset($_POST['submit'])) {
 <header>
     <h1 class="title">Account</h1>
 </header>
-<section class="sidebar">
+<nav class="sidebar">
     <section class="title">Echoes of Noordheim Forum</section>
     <menu>
         <li><a href="index.php">Home</a></li>
@@ -80,36 +80,42 @@ if (isset($_POST['submit'])) {
         <li><a href="account.php">Account</a></li>
         <li><a href="aboutus.php">About us</a></li>
     </menu>
-</section>
+</nav>
 <main class="main-content">
+    <section class="title">
+        <h1>Account</h1>
+    </section>
     <?php if ($login) { ?>
         <p>You've been logged in!</p>
         <?php $user = $_SESSION['loggedInUser']; ?>
-        <?php if ($user['is_admin'] == "1") { ?>
+        <?php if ($user['is_admin'] !== "0") { ?>
             <a href="news.php">See assignments</a>
         <?php } ?>
         <p><a href="logout.php">Logout</a></p>
     <?php } else { ?>
         <form action="" method="post" class="test">
-            <div class="form-element">
+            <section class="form-element">
                 <label for="email">E-mail</label>
                 <input id="email" type="email" name="email" placeholder="Type your email address here" value="<?php echo htmlspecialchars(isset($email) ? $email : ''); ?>" />
                 <p><?php echo htmlspecialchars(isset($errors['email']) ? $errors['email'] : ''); ?></p>
-            </div>
-            <div class="form-element">
+            </section>
+            <section class="form-element">
                 <label for="password">Password</label>
                 <input id="password" type="password" name="password" placeholder="Type your password here">
                 <p><?php echo htmlspecialchars(isset($errors['password']) ? $errors['password'] : ''); ?></p>
                 <?php if (isset($errors['loginFailed'])) { ?>
-                    <div><?php echo htmlspecialchars($errors['loginFailed']); ?></div>
+                    <section><?php echo htmlspecialchars($errors['loginFailed']); ?></section>
                 <?php } ?>
-            </div>
+            </section>
             <p>No account? <a href="register.php">Register here</a>!</p>
-            <div class="form-element">
+            <section class="form-element">
                 <button type="submit" name="submit">Login</button>
-            </div>
+            </section>
         </form>
     <?php } ?>
+    <footer>
+        <span>&copy; Echoes of Noordheim Forum 2024</span>
+    </footer>
 </main>
 </body>
 </html>
